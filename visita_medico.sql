@@ -50,16 +50,17 @@ select * from [dbo].[salesforce_medico] where cmp = '26135'
 
 
 --
-select * from salesforce_medico where cmp = '26135'
-select * from salesforce_ubicacion_IPRESS where id in ('a0w6g000000nSJ0','a0w6g000000nQkv') 
-select * from salesforce_ubicacion_medico where Medicos__c = 'a006g000003pzjH'
-id_medico = a006g000003pzjH
-ubicacion_IPRESS = 
-a0w6g000000nSJ0
-a0w6g000000nQkv
+select * from salesforce_medico where cmp = '38588'
+select * from salesforce_ubicacion_IPRESS where id = 'a0w6g000000nSJ0'
+select * from salesforce_ubicacion_medico where Medicos__c = 'a006g000003pwb1'
+select * from #ubicacion_medico where cmp = '38588'
+select * from  #salesforce_visita_medico where cmp__c = '38588'
 
-select * from visita_concordancia where cmp = '26135'
-select * from #salesforce_visita_medico where cmp__c = '26135'
+id_medico = a006g000003pwb1
+ubicacion_IPRESS = a0w6g000000nSJ0
+
+select * from #ubicacion_medico_total where cmp = '38588'
+
 */
 
 --Borramos duplicados
@@ -171,6 +172,21 @@ from	#ubicacion_medico a
 inner join salesforce_ubicacion_IPRESS b
 on		a.ubicacion_IPRESS__C = b.id
 go
+
+
+select	a.nombre_propietario
+		,a.id_medico
+		,a.nombre_medico
+		,a.cmp
+		,b.latitud__c as latitud
+		,b.longitud__c as longitud
+		,b.name as nombre_centro
+from	#ubicacion_medico a
+inner join salesforce_ubicacion_IPRESS b
+on		a.ubicacion_IPRESS__C = b.id
+where	a.cmp = '38588'
+go
+
 
 --xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
