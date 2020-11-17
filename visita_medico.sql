@@ -49,17 +49,24 @@ select * from [dbo].[salesforce_medico] where cmp = '26135'
 
 
 
---
-select * from salesforce_medico where cmp = '38588'
-select * from salesforce_ubicacion_IPRESS where id = 'a0w6g000000nSJ0'
-select * from salesforce_ubicacion_medico where Medicos__c = 'a006g000003pwb1'
-select * from #ubicacion_medico where cmp = '38588'
+--a016g00000aGdSN
+select * from salesforce_medico where cmp = '26135'
+select * from salesforce_ubicacion_IPRESS where id in ('a0w6g000000nSJ0','a0w6g000000nQkv')
+select * from #ubicacion_medico where ubicacion_IPRESS__C in ('a0w6g000000nSJ0','a0w6g000000nQkv')
+select * from #ubicacion_medico_total where nombre_centro in ('CLÍNICA VESALIO','SISOL SALUD CAMANA')
+select * from #ubicacion_medico_total where cmp = '26135'
+select * from #salesforce_visita_medico where Medicos__c like '%a006g000003pzjH%'
+select * from #visita_concordancia where cmp = '26135'
+select * from visita_concordancia where cmp = '26135'
+
+select * from salesforce_ubicacion_medico where Medicos__c = 'a006g000003pzjH'
+select * from #ubicacion_medico where id_medico in ('a0x6g000003lMotAAE','a0x6g000003lPtIAAU')
 select * from  #salesforce_visita_medico where cmp__c = '38588'
 
 id_medico = a006g000003pwb1
 ubicacion_IPRESS = a0w6g000000nSJ0
 
-select * from #ubicacion_medico_total where cmp = '38588'
+
 
 */
 
@@ -87,6 +94,7 @@ alter table #salesforce_visita_medico drop column repetido
 delete from	#salesforce_visita_medico
 where	cast(Fecha_y_Hora__c as date) < '2020-09-01'
 go
+
 
 ALTER TABLE [salesforce_ubicacion_medico]
 ALTER COLUMN Medicos__c nvarchar(18) COLLATE Latin1_General_CS_AS
@@ -174,18 +182,6 @@ on		a.ubicacion_IPRESS__C = b.id
 go
 
 
-select	a.nombre_propietario
-		,a.id_medico
-		,a.nombre_medico
-		,a.cmp
-		,b.latitud__c as latitud
-		,b.longitud__c as longitud
-		,b.name as nombre_centro
-from	#ubicacion_medico a
-inner join salesforce_ubicacion_IPRESS b
-on		a.ubicacion_IPRESS__C = b.id
-where	a.cmp = '38588'
-go
 
 
 --xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -497,4 +493,13 @@ set		distancia = 0
 where	estado = 'SIN IPRESS'
 go
 
+select distinct cmp,latitud_IPRESS,longitud_IPRESS from visita_concordancia
+where latitud_IPRESS is not null
 
+select	ROW_NUMBER() OVER(PARTITION BY cmp,latitud_IPRESS,longitud_IPRESS
+		ORDER BY latitud_IPRESS DESC) AS "repetido"
+		,*
+from	visita_concordancia
+where	cmp = '26135'
+
+select * from visita_concordancia where	cmp = '26135'
