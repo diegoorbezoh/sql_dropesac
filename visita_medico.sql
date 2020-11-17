@@ -40,20 +40,26 @@ from	salesforce_medico a
 inner join salesforce_visita_medico b
 on		substring(a.id_propietario,1,15) = substring(b.CreatedById,1,15)
 
-update	a
-set		a.nombre_propietario = b.[Nombre completo]
-from	salesforce_medico a
-inner join temporal.dbo.input_medicos b
-on		substring(a.id_propietario,1,15) = b.[id# de usuario]
-
 
 select distinct substring(id_propietario,1,15) from salesforce_medico where nombre_propietario is null
 select * from salesforce_medico where cmp = '37286'
 
-select * from [dbo].[salesforce_medico] w
 
-38529
+select * from [dbo].[salesforce_medico] where cmp = '26135'
 
+
+
+--
+select * from salesforce_medico where cmp = '26135'
+select * from salesforce_ubicacion_IPRESS where id in ('a0w6g000000nSJ0','a0w6g000000nQkv') 
+select * from salesforce_ubicacion_medico where Medicos__c = 'a006g000003pzjH'
+id_medico = a006g000003pzjH
+ubicacion_IPRESS = 
+a0w6g000000nSJ0
+a0w6g000000nQkv
+
+select * from visita_concordancia where cmp = '26135'
+select * from #salesforce_visita_medico where cmp__c = '26135'
 */
 
 --Borramos duplicados
@@ -75,6 +81,11 @@ where repetido = 1
 --order by id_representante,CMP__c,Fecha_y_Hora__c desc
 
 alter table #salesforce_visita_medico drop column repetido
+
+-- Eliminamos registros pasados
+delete from	#salesforce_visita_medico
+where	cast(Fecha_y_Hora__c as date) < '2020-09-01'
+go
 
 ALTER TABLE [salesforce_ubicacion_medico]
 ALTER COLUMN Medicos__c nvarchar(18) COLLATE Latin1_General_CS_AS
@@ -224,8 +235,7 @@ select	b.latitud as latitud_IPRESS
 into	#visita_concordancia
 from	#salesforce_visita_medico a
 left join #ubicacion_medico_total b
-on		(a.cmp__c = b.cmp
-and		a.OwnerId = b.id_propietario)
+on		(a.cmp__c = b.cmp)
 where	a.Elegir_Visita__c = 'VISITA PRESENCIAL'
 order by cast(a.Fecha_y_Hora__c as date) asc
 
@@ -291,10 +301,7 @@ on		a.id_propietario = b.id_visitador
 where	a.nombre_propietario is null
 go
 
--- Eliminamos registros pasados
-delete from	#visita_concordancia
-where	fecha_visita < '2020-09-01'
-go
+
 
 --**************************************************************************
 -- Tabla de concordancia
@@ -384,10 +391,6 @@ delete from visita_concordancia
 where	latitud_IPRESS is null
 go
 
-delete from visita_concordancia
-where id_visita = 'a016g00000aMmdp'
-go
-
 update	visita_concordancia
 set		longitud_visita = concat(substring(longitud_visita,1,7),'00')
 where	len(longitud_visita) = 8
@@ -432,9 +435,10 @@ set		distancia =
 				SIN(RADIANS(latitud_visita))*SIN(RADIANS(latitud_IPRESS))+
 				COS(RADIANS(latitud_visita))*COS(RADIANS(latitud_IPRESS))*
 				COS(RADIANS(longitud_visita)-RADIANS(longitud_IPRESS)))
+go
 
 --convertimos a decimal
-alter table #visita_concordancia alter column distancia float
+alter table visita_concordancia alter column distancia float
 go
 
 update	visita_concordancia
@@ -477,11 +481,4 @@ set		distancia = 0
 where	estado = 'SIN IPRESS'
 go
 
-190	-12.02642	-77.00345	ROMMY ALLISON FLORES ORIHUELA	POLICLÍNICO DE JESÚS	Lisdey Cedrón Rengifo	
-0056g000004b21n	45342	2020-10-06	Longitude: -76.98513919999999 Latitude: -12.150374399999999	a016g00000aK5Z0	
-VISITA PRESENCIAL	-12.15037	-76.98513	revisar	13925.8
 
-select 				1000*6371.01*ACOS(
-				SIN(RADIANS(-12.15037))*SIN(RADIANS(-12.02642))+
-				COS(RADIANS(-12.15037))*COS(RADIANS(-12.02642))*
-				COS(RADIANS(-76.98513)-RADIANS(-77.00345)))
