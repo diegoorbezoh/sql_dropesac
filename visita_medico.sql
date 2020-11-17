@@ -56,6 +56,26 @@ select * from [dbo].[salesforce_medico] w
 
 */
 
+--Borramos duplicados
+drop table if exists #salesforce_visita_medico
+go
+with cte_asignacion_medico
+as
+(
+select distinct 
+		ROW_NUMBER() OVER(PARTITION BY OwnerId,CMP__c,Fecha_y_Hora__c
+		ORDER BY Fecha_y_Hora__c DESC) AS "repetido"
+		,*
+from salesforce_visita_medico
+--where CMP__c = '37286'
+)select * 
+into #salesforce_visita_medico
+from cte_asignacion_medico
+where repetido = 1
+--order by id_representante,CMP__c,Fecha_y_Hora__c desc
+
+alter table #salesforce_visita_medico drop column repetido
+
 ALTER TABLE [salesforce_ubicacion_medico]
 ALTER COLUMN Medicos__c nvarchar(18) COLLATE Latin1_General_CS_AS
 go
@@ -77,7 +97,7 @@ update	salesforce_ubicacion_medico
 set		Medicos__c = substring(Medicos__c,1,15)
 go
 
-update	salesforce_visita_medico
+update	#salesforce_visita_medico
 set		id = substring(id,1,15)
 
 -- Limpiamos tabla de ubicacion_medico
@@ -161,18 +181,18 @@ delete from #ubicacion_medico_total where nombre_propietario = 'Ivo Carlos Ramos
 -- ****************************************************************************************
 
 --Preparamos la tabla salesforce_visita_medico
-ALTER TABLE salesforce_visita_medico
+ALTER TABLE #salesforce_visita_medico
 ALTER COLUMN OwnerId nvarchar(18) COLLATE Latin1_General_CS_AS
 
-ALTER TABLE salesforce_visita_medico
+ALTER TABLE #salesforce_visita_medico
 ALTER COLUMN id nvarchar(80) COLLATE Latin1_General_CS_AS
 
-ALTER TABLE salesforce_visita_medico
+ALTER TABLE #salesforce_visita_medico
 ALTER COLUMN OwnerId nvarchar(18) COLLATE Latin1_General_CS_AS
 
 
 
-update	salesforce_visita_medico
+update	#salesforce_visita_medico
 set		OwnerId = substring(OwnerId,1,15)
 
 ALTER TABLE #ubicacion_medico_total
@@ -202,7 +222,7 @@ select	b.latitud as latitud_IPRESS
 		,a.id as id_visita
 		,a.Elegir_Visita__c
 into	#visita_concordancia
-from	salesforce_visita_medico a
+from	#salesforce_visita_medico a
 left join #ubicacion_medico_total b
 on		(a.cmp__c = b.cmp
 and		a.OwnerId = b.id_propietario)
@@ -229,7 +249,7 @@ substring(
 ,id
 ,geolocalizacion__c
 into #longitud
-from salesforce_visita_medico
+from #salesforce_visita_medico
 
 
 drop table if exists #latitud;
@@ -242,7 +262,7 @@ select substring(
 ,id
 ,geolocalizacion__c
 into #latitud
-from salesforce_visita_medico
+from #salesforce_visita_medico
 
 
 update	a
@@ -282,7 +302,7 @@ go
 alter table #visita_concordancia add estado varchar(20)
 go
 
-alter table #visita_concordancia add distancia float
+alter table #visita_concordancia add distancia varchar(100)
 go
 
 update	#visita_concordancia
@@ -368,6 +388,10 @@ delete from visita_concordancia
 where id_visita = 'a016g00000aMmdp'
 go
 
+update	visita_concordancia
+set		longitud_visita = concat(substring(longitud_visita,1,7),'00')
+where	len(longitud_visita) = 8
+
 update visita_concordancia 
 set longitud_visita = replace(ltrim(rtrim(substring(longitud_visita,1,9))),' ','')
 go
@@ -400,43 +424,34 @@ update visita_concordancia
 set latitud_visita = ltrim(rtrim(replace(latitud_visita,',','')))
 go
 
---valido
-select			1000*6371.01*ACOS(
+--
+
+update	visita_concordancia
+set		distancia = 
+				1000*6371.01*ACOS(
 				SIN(RADIANS(latitud_visita))*SIN(RADIANS(latitud_IPRESS))+
 				COS(RADIANS(latitud_visita))*COS(RADIANS(latitud_IPRESS))*
-				COS(RADIANS(substring(longitud_visita,1,7))-RADIANS(longitud_IPRESS)))
-from			visita_concordancia
+				COS(RADIANS(longitud_visita)-RADIANS(longitud_IPRESS)))
 
+--convertimos a decimal
+alter table #visita_concordancia alter column distancia float
+go
 
+update	visita_concordancia
+set		distancia = cast(distancia as float)
+go
 
-
-
---!PROVISIONAL
+--Unimos la tabla de IPRESS
 
 insert into visita_concordancia
 select * from #sin_IPRESS
 
-begin tran
-rollback
-
-
-select * from visita_concordancia where distancia is null
-
 
 update	visita_concordancia
 set		estado = 'SIN IPRESS'
-where estado is null
+where	latitud_IPRESS is null
 go
 
-begin tran
-
-update	visita_concordancia
-set		estado = 'revisar'
-where estado is null
-
-delete from visita_concordancia 
-where estado = 'revisar' and distancia is null
-go
 
 update	a
 set		a.nombre_medico = b.[nombre_medico]
@@ -445,9 +460,28 @@ inner join visita_concordancia a
 on		a.cmp= b.cmp
 go
 
+update	visita_concordancia
+set		estado = 'revisar'
+where	distancia > cast(200.00 as float)
+and		latitud_IPRESS is not null
+go
 
+update	visita_concordancia
+set		estado = 'correcto'
+where	distancia <= cast(200.00 as float)
+and		latitud_IPRESS is not null
+go
 
+update	visita_concordancia
+set		distancia = 0
+where	estado = 'SIN IPRESS'
+go
 
+190	-12.02642	-77.00345	ROMMY ALLISON FLORES ORIHUELA	POLICLÍNICO DE JESÚS	Lisdey Cedrón Rengifo	
+0056g000004b21n	45342	2020-10-06	Longitude: -76.98513919999999 Latitude: -12.150374399999999	a016g00000aK5Z0	
+VISITA PRESENCIAL	-12.15037	-76.98513	revisar	13925.8
 
-
-
+select 				1000*6371.01*ACOS(
+				SIN(RADIANS(-12.15037))*SIN(RADIANS(-12.02642))+
+				COS(RADIANS(-12.15037))*COS(RADIANS(-12.02642))*
+				COS(RADIANS(-76.98513)-RADIANS(-77.00345)))
