@@ -55,3 +55,6 @@ and		fecha is not null
 
 alter table visita_medico_visitador drop column repetido
 go
+
+select * from visita_medico_visitador where id_propietario like '%0056g000004bILJ'
+

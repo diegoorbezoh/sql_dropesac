@@ -1,22 +1,14 @@
 /*
 -- Script de coordenadas
-
 select * from [dbo].[salesforce_ubicacion_IPRESS] where id like '%a0w6g000000nSmQ%'
 select * from [dbo].[salesforce_ubicacion_medico] 
 select * from [dbo].[salesforce_medico] where [id_medico] like '%a006g000003pwhS%'
 select * from  #ubicacion_medico_new where [id_medico_new] like '%a006g000003pwhS%'
 select * from #salesforce_medico_new where [id_medico_new] like '%a006g000003pwhS%'
-
 select * from #salesforce_medico_new where [id_medico] COLLATE Latin1_General_CS_AS = 'a006g000003pwhS'
 select * from salesforce_medico where [id_medico] = 'a006g000003pwhS'
-
 select * from [dbo].[salesforce_ubicacion_medico] where Medicos__c like '%a006g00000DuzV1%'
-
-
 select * from [dbo].[salesforce_ubicacion_IPRESS] where name like '%DAFI SALUD%'
-
-
-
 select	a.*
 		,a.Medicos__c
 		,b.nombre_medico
@@ -24,48 +16,39 @@ from	salesforce_ubicacion_medico a
 inner join [dbo].[salesforce_medico] b
 on		a.Medicos__c = b.id_medico
 where	b.cmp = '37286'
-
 a0w6g0000037SUI -> IPRESS
 a006g000003q4Pv -> Medicos
-
 select * from #ubicacion_medico_total where id_medico = 'a006g000003q4Pv'
 select * from salesforce_ubicacion_IPRESS where id = 'a0w6g0000037SUI'
 select distinct nombre_representante,id_usuario_laborable from visita_dia_laborable
-
 alter table salesforce_medico alter column id_propietario nvarchar(18)
-
 update	a
 set		a.nombre_propietario = b.Nombre_Propietario__c
 from	salesforce_medico a
 inner join salesforce_visita_medico b
 on		substring(a.id_propietario,1,15) = substring(b.CreatedById,1,15)
-
-
 select distinct substring(id_propietario,1,15) from salesforce_medico where nombre_propietario is null
 select * from salesforce_medico where cmp = '37286'
-
-
 select * from [dbo].[salesforce_medico] where cmp = '26135'
-
-
-
 --a016g00000aGdSN
-select * from salesforce_medico where cmp = '26135'
+select * from salesforce_medico where cmp = '14074'
 select * from salesforce_ubicacion_IPRESS where id in ('a0w6g000000nSJ0','a0w6g000000nQkv')
 select * from #ubicacion_medico where ubicacion_IPRESS__C in ('a0w6g000000nSJ0','a0w6g000000nQkv')
-select * from #ubicacion_medico_total where nombre_centro in ('CL√çNICA VESALIO','SISOL SALUD CAMANA')
+select * from #ubicacion_medico_total where nombre_centro in ('CLÕNICA VESALIO','SISOL SALUD CAMANA')
 select * from #ubicacion_medico_total where cmp = '26135'
 select * from #salesforce_visita_medico where Medicos__c like '%a006g000003pzjH%'
 select * from #visita_concordancia where cmp = '26135'
 select * from visita_concordancia where cmp = '26135'
-
 select * from salesforce_ubicacion_medico where Medicos__c = 'a006g000003pzjH'
 select * from #ubicacion_medico where id_medico in ('a0x6g000003lMotAAE','a0x6g000003lPtIAAU')
 select * from  #salesforce_visita_medico where cmp__c = '38588'
-
 id_medico = a006g000003pwb1
 ubicacion_IPRESS = a0w6g000000nSJ0
 
+
+select * from visita_concordancia where fecha_visita = '2020-11-19'
+
+select * from visita_concordancia where rank = '338'
 
 
 */
@@ -130,7 +113,7 @@ update	salesforce_ubicacion_IPRESS
 set		id = substring(id,1,15)
 go
 
--- Limpiamos tabla de m√©dicos
+-- Limpiamos tabla de mÈdicos
 update	salesforce_medico
 set		id_medico = substring(id_medico,1,15)
 go
@@ -144,14 +127,14 @@ ALTER COLUMN id_propietario nvarchar(18) COLLATE Latin1_General_CS_AS
 go
 
 ALTER TABLE temporal.[dbo].[input_usuarios]
-ALTER COLUMN [Id# de usuario] nvarchar(255) COLLATE Latin1_General_CS_AS
+ALTER COLUMN id_representante nvarchar(255) COLLATE Latin1_General_CS_AS
 go
 
 update	a
-set		a.nombre_propietario = b.[Nombre completo]
+set		a.nombre_propietario = b.nombre_representante
 from	temporal.[dbo].[input_usuarios] b
 inner join salesforce_medico a
-on		a.id_propietario= b.[Id# de usuario]
+on		a.id_propietario= b.id_representante
 go
 
 drop table if exists #ubicacion_medico
@@ -198,7 +181,7 @@ on		a.nombre_propietario = b.nombre_representante
 go
 
 
---Limpiamos alg√∫n valor que no corresponda
+--Limpiamos alg˙n valor que no corresponda
 delete from #ubicacion_medico_total where nombre_propietario = 'Ivo Carlos Ramos'
 
 -- ****************************************************************************************
@@ -224,10 +207,10 @@ go
 
 --Actualizamos id_propietario de existir NULL
 update	a
-set		a.id_propietario = b.[Id# de usuario]
+set		a.id_propietario = b.id_representante
 from	temporal.dbo.input_usuarios b
 inner join #ubicacion_medico_total a
-on		a.nombre_propietario = b.[Nombre completo]
+on		a.nombre_propietario = b.nombre_representante
 where	a.id_propietario is null
 
 
@@ -300,16 +283,16 @@ from	#latitud b
 inner join #visita_concordancia a
 on		a.id_visita = b.id
 
-ALTER TABLE [dbo].[venta_visitador_inkafarma]
-ALTER COLUMN id_visitador varchar(50) COLLATE Latin1_General_CS_AS
+ALTER TABLE temporal.[dbo].[input_usuarios]
+ALTER COLUMN id_representante varchar(50) COLLATE Latin1_General_CS_AS
 go
 
--- Completamos Nombres vac√≠os
+-- Completamos Nombres vacÌos
 update	a
-set		a.nombre_propietario = b.visitador
-from	venta_visitador_inkafarma b
+set		a.nombre_propietario = b.nombre_representante
+from	temporal.[dbo].[input_usuarios] b
 inner join #visita_concordancia a
-on		a.id_propietario = b.id_visitador
+on		a.id_propietario = b.id_representante
 where	a.nombre_propietario is null
 go
 
@@ -325,7 +308,7 @@ alter table #visita_concordancia add distancia varchar(100)
 go
 
 update	#visita_concordancia
-set		nombre_propietario = 'Luz Casta√±eda Jumpa'
+set		nombre_propietario = 'Luz CastaÒeda Jumpa'
 where	id_propietario = '0056g000004b20L'
 go
 
@@ -493,13 +476,20 @@ set		distancia = 0
 where	estado = 'SIN IPRESS'
 go
 
-select distinct cmp,latitud_IPRESS,longitud_IPRESS from visita_concordancia
-where latitud_IPRESS is not null
+SELECT [rank]
+      ,[latitud_IPRESS]
+      ,[longitud_IPRESS]
+      ,[nombre_medico]
+      ,[nombre_propietario]
+      ,[id_propietario]
+      ,[cmp]
+      ,[fecha_visita]
+      ,[Geolocalizacion__c]
+      ,[id_visita]
+      ,[latitud_visita]
+      ,[longitud_visita]
+      ,[estado]
+      ,[distancia]
+	  ,[nombre_centro]
+  FROM [dbo].[visita_concordancia]
 
-select	ROW_NUMBER() OVER(PARTITION BY cmp,latitud_IPRESS,longitud_IPRESS
-		ORDER BY latitud_IPRESS DESC) AS "repetido"
-		,*
-from	visita_concordancia
-where	cmp = '26135'
-
-select * from visita_concordancia where	cmp = '26135'
