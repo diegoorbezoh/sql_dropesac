@@ -52,4 +52,3 @@ select * from [dbo].[salesforce_visita_medico] where cast([Fecha_y_Hora__c] as d
 
 select * from visita_concordancia where fecha_visita = '2020-11-19' and nombre_propietario = 'Allison Pasco'
 
-select distinct local from [dbo].[venta_universal]
