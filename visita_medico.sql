@@ -28,18 +28,21 @@ from	salesforce_medico a
 inner join salesforce_visita_medico b
 on		substring(a.id_propietario,1,15) = substring(b.CreatedById,1,15)
 select distinct substring(id_propietario,1,15) from salesforce_medico where nombre_propietario is null
-select * from salesforce_medico where cmp = '37286'
+
 select * from [dbo].[salesforce_medico] where cmp = '26135'
 --a016g00000aGdSN
-select * from salesforce_medico where cmp = '14074'
-select * from salesforce_ubicacion_IPRESS where id in ('a0w6g000000nSJ0','a0w6g000000nQkv')
-select * from #ubicacion_medico where ubicacion_IPRESS__C in ('a0w6g000000nSJ0','a0w6g000000nQkv')
-select * from #ubicacion_medico_total where nombre_centro in ('CLÍNICA VESALIO','SISOL SALUD CAMANA')
+
+select * from salesforce_medico where cmp = '31844'
+select * from salesforce_ubicacion_medico where Medicos__c = 'a006g000003q2T4'
+select * from salesforce_ubicacion_IPRESS where id = 'a0w6g000000nR4D'
+
+select * from #ubicacion_medico where cmp = '31844'
+select * from #ubicacion_medico_total where cmp = '31844'
 select * from #ubicacion_medico_total where cmp = '26135'
 select * from #salesforce_visita_medico where Medicos__c like '%a006g000003pzjH%'
 select * from #visita_concordancia where cmp = '26135'
 select * from visita_concordancia where cmp = '26135'
-select * from salesforce_ubicacion_medico where Medicos__c = 'a006g000003pzjH'
+
 select * from #ubicacion_medico where id_medico in ('a0x6g000003lMotAAE','a0x6g000003lPtIAAU')
 select * from  #salesforce_visita_medico where cmp__c = '38588'
 id_medico = a006g000003pwb1
@@ -182,7 +185,7 @@ go
 
 
 --Limpiamos algún valor que no corresponda
-delete from #ubicacion_medico_total where nombre_propietario = 'Ivo Carlos Ramos'
+--delete from #ubicacion_medico_total where nombre_propietario = 'Ivo Carlos Ramos'
 
 -- ****************************************************************************************
 
