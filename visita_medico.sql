@@ -32,7 +32,7 @@ select distinct substring(id_propietario,1,15) from salesforce_medico where nomb
 select * from [dbo].[salesforce_medico] where cmp = '26135'
 --a016g00000aGdSN
 
-select * from salesforce_medico where cmp = '31844'
+select * from visita_concordancia where cmp = '31844'
 select * from salesforce_ubicacion_medico where Medicos__c = 'a006g000003q2T4'
 select * from salesforce_ubicacion_IPRESS where id = 'a0w6g000000nR4D'
 

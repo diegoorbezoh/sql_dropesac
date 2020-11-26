@@ -90,7 +90,7 @@ go
 
 -- Actualizamos descripcion_local y distrito
 update	a
-set		a.descripcion_local = b.cod_local
+set		a.descripcion_local = b.descripcion_local
 		,a.distrito = b.distrito
 from	temporal.dbo.inkafarma_locales b
 inner join #inkafarma a

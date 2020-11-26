@@ -189,3 +189,26 @@ insert into [dbo].[cadena_venta_stock]
       ,[nombre_representante]
       ,[id_representante]
   FROM [dbo].[venta_universal_resumen]
+
+
+
+SELECT distinct 
+		[periodo]
+      ,[cod_producto]
+      ,[descripcion_producto]
+      ,[cod_local]
+      ,[descripcion_local]
+      ,[formato]
+      ,[distrito]
+      ,[vta_periodo_unid]
+      ,[stock_actual_unid]
+      ,[nombre_representante]
+      ,[id_representante]
+into	#temporal
+FROM [dbo].[cadena_venta_stock]
+
+truncate table [dbo].[cadena_venta_stock]
+
+insert into [dbo].[cadena_venta_stock]
+select	*
+from	#temporal
