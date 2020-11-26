@@ -17,8 +17,10 @@ where   a.nombre_visitador is null;
 
 -- Tablas temporales según año
 
-drop table if exists test.venta_2020;
-create temporary table test.venta_2020
+use test;
+
+drop table if exists venta_2020;
+create temporary table venta_2020
 SELECT cast(fechaEmision as date)fecha_emision
 			,id_visitador
             ,nombre_visitador
@@ -30,8 +32,8 @@ group by fechaEmision
 		,id_visitador
 		,nombre_visitador;
 
-drop table if exists test.venta_2019;
-create temporary table test.venta_2019
+drop table if exists venta_2019;
+create temporary table venta_2019
 SELECT cast(fechaEmision as date)fecha_emision
 			,id_visitador
             ,nombre_visitador
@@ -45,22 +47,84 @@ group by fechaEmision
 
 drop table if exists venta_resumen_2020;
 create temporary table venta_resumen_2020
-select		a.dia
+select		a.dia as fecha_emision
 			,b.id_visitador
 			,b.nombre_visitador
-			,b.total
-from		test.fecha a
-left join	comercial.venta_2020 b
+			,b.total as venta_2020
+from		fecha a
+left join	venta_2020 b
 on			a.dia = b.fecha_emision;
 
-update  test.venta_resumen_2020 a
-join    test.venta_2019 b
+drop table if exists venta_resumen_2019;
+create temporary table venta_resumen_2019
+select		a.dia as fecha_emision
+			,b.id_visitador
+			,b.nombre_visitador
+			,b.total as venta_2019
+from		fecha a
+left join	venta_2019 b
+on			a.dia = b.fecha_emision;
+
+# Eliminamos fechas que no correspondan
+delete from venta_resumen_2020
+where	year(fecha_emision) = '2019';
+
+delete from venta_resumen_2019
+where	year(fecha_emision) = '2020';
+
+# Limpiamos antes del Join con los días totales
+update	venta_resumen_2020
+set		venta_2020 = 0
+where	venta_2020 is null
+and		year(fecha_emision) = '2020';
+
+update	venta_resumen_2019
+set		venta_2019 = 0
+where	venta_2019 is null
+and		year(fecha_emision) = '2019';
+
+alter table venta_resumen_2020 add cod_dia_act varchar(10);
+alter table venta_resumen_2019 add cod_dia_act varchar(10);
+
+update	venta_resumen_2020
+set		cod_dia_act = replace(cast(fecha_emision as char(10)),'-','') 
+;
+
+update	venta_resumen_2019
+set		cod_dia_act = replace(cast(fecha_emision as char(10)),'-','') 
+;
+
+update	venta_resumen_2019
+set		cod_dia_act = replace(cod_dia_act,'2019','2020') 
+;
+
+select	dia
+		,id_visitador
+        ,nombre_visitador
+        ,total as venta_2020
+from	venta_resumen_2020
+where	year(dia) = '2020';
+
+
+# separar
+update  venta_resumen_2020 a
+join    venta_2019 b
 on      a.dia = b.fecha_emision
 set     a.id_visitador = b.id_visitador
 		,a.nombre_visitador = b.nombre_visitador
         ,a.total = b.total;
 
+
+drop co
+alter table venta_resumen_2020 add crecimiento decimal(10,2) null;
+
+# 2. Actualizamos el crecimiento
+update	venta_resumen_2020
+set		crecimiento ()
+
 # 2. Insert final
 insert into comercial.venta_reporteria_resumen
-select * from test.venta_resumen_2020;
+select * from venta_resumen_2020;
+
+
 
