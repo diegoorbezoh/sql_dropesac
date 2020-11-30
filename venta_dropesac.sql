@@ -1,6 +1,17 @@
 
+
+
+
 insert into factura_boleta_reporteria
 select * from dropesac2015_temp.view_factura_boleta_reporteria;
+
+
+select distinct producto from comercial.venta_reporteria
+where producto '%MEGEX%'
+
+
+
+
 
 # 1. Update de campos null
 update  comercial.venta_reporteria a

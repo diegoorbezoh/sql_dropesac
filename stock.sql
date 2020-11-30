@@ -1,6 +1,128 @@
 
-[dbo].[venta_universal]
-[dbo].[stock_universal]
+
+--Sacamos temporales de venta
+
+drop table if exists #venta_2020
+select	*
+into	#venta_2020
+from	venta_universal_resumen
+where	year(fecha) = '2020'
+
+drop table if exists #venta_2019
+select	*
+into	#venta_2019
+from	venta_universal_resumen
+where	year(fecha) = '2019'
+
+
+
+select	a. dia
+		,nombre_local
+		,nombre_producto
+		,nombre_representante
+		,id_representante
+		,sum(PRECIO_TOTAL)venta
+into	#venta_2020_detalle
+from	temporal.[dbo].[periodo] a
+left join #venta_2020 b
+on		a.dia = b.fecha
+group by a. dia
+		,nombre_local
+		,nombre_producto
+		,nombre_representante
+		,id_representante
+
+alter table #venta_2020_detalle add cod_dia varchar(8)
+
+update	#venta_2020_detalle
+set		cod_dia = replace(cast(dia as varchar(10)),'-','')
+
+delete from #venta_2020_detalle
+where year(dia) = '2019'
+
+select	a. dia
+		,nombre_local
+		,nombre_producto
+		,nombre_representante
+		,id_representante
+		,sum(PRECIO_TOTAL)venta
+into	#venta_2019_detalle
+from	temporal.[dbo].[periodo] a
+left join #venta_2019 b
+on		a.dia = b.fecha
+group by a. dia
+		,nombre_local
+		,nombre_producto
+		,nombre_representante
+		,id_representante
+
+alter table #venta_2019_detalle add cod_dia varchar(8)
+
+update	#venta_2019_detalle
+set		cod_dia = replace(cast(dia as varchar(10)),'-','')
+
+update	#venta_2019_detalle
+set		cod_dia = replace(cod_dia,'2019','2020')
+
+delete from #venta_2019_detalle
+where year(dia) = '2020'
+
+--join final
+
+alter table temporal.[dbo].[periodo] add cod_dia varchar(8)
+
+update	temporal.[dbo].[periodo]
+set		cod_dia = replace(cast(dia as varchar(10)),'-','')
+
+use comercial
+
+
+
+truncate table universal_crecimiento
+insert into	universal_crecimiento
+select	a.dia
+		,b.nombre_local
+		,b.nombre_producto
+		,b.nombre_representante
+		,b.id_representante
+		,b.venta as venta_2020
+		,c.venta as venta_2019
+from	temporal.[dbo].[periodo] a
+left join 	#venta_2020_detalle b
+on		(a.cod_dia = b.cod_dia)
+left join 	#venta_2019_detalle c
+on		(a.cod_dia = c.cod_dia
+and		b.nombre_producto = c.nombre_producto)
+and		b.nombre_representante = c.nombre_representante)
+where	b.nombre_representante is not null
+
+
+
+
+
+update	universal_crecimiento
+set		venta_2020 = 0
+where	venta_2020 is null
+
+update	universal_crecimiento
+set		venta_2019 = 0
+where	venta_2019 is null
+
+
+update	universal_crecimiento
+set		nombre_representante = 'Yulisa Valverde Bellodas'
+where	nombre_local = 'CENTRAL'
+
+
+
+
+
+
+
+
+
+
+
 
 --1. Creamos la tabla matriz que tendrá todos los locales y productos
 
@@ -32,6 +154,7 @@ select	cast(b.fecha as date)fecha
 		,b.COD_LOCAL
 		,a.nombre_producto
 		,b.cantidad
+		,b.PRECIO_TOTAL
 		,c.stock
 into	venta_universal_resumen
 from	#tabla_matriz_universal a
@@ -41,6 +164,8 @@ and		a.nombre_local = b.nombre_local)
 left join stock_universal c
 on		(a.cod_producto = c.cod_producto
 and		a.nombre_local = c.nombre_local)
+
+
 
 --3. Actualizamos stock 0
 update	venta_universal_resumen
@@ -99,6 +224,8 @@ set		nombre_representante = 'Yulisa Valverde Bellodas'
 		,id_representante = '0056g000004b20a'
 where	NOMBRE_LOCAL = 'LA MARINA'
 go
+
+
 
 update	venta_universal_resumen
 set		nombre_representante = 'Por definir'

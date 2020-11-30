@@ -1,3 +1,6 @@
+select * from temporal.dbo.inkafarma_venta_input
+where DESCRIPCION like '%%'
+
 
 --1. Creamos tabla de ubicaciones y productos únicos
 
@@ -27,6 +30,7 @@ from	temporal.dbo.inkafarma_stock_input
 go
 
 
+
 --3. Insertamos los nuevos registros de venta
 insert into temporal.dbo.inkafarma_venta
 select	
@@ -37,6 +41,7 @@ distinct cast(periodo as date)periodo
 		,descripcion_local
 		,distrito
 		,vta_periodo_unid
+		,COSTO_DE_VENTA_PERIODO_S
 from	temporal.dbo.inkafarma_venta_input
 
 
@@ -50,6 +55,7 @@ select	b.periodo
 		,c.formato
 		,b.distrito
 		,b.vta_periodo_unid
+		,b.vta_costo
 		,c.stock_actual_unid
 		,d.nombre_representante
 		,d.id_representante
@@ -98,6 +104,79 @@ on		a.cod_local = b.cod_local
 go
 
 -- 5. Insert a tabla de producción
+
 insert into comercial.dbo.cadena_venta_stock
+SELECT [periodo]
+      ,[cod_producto]
+      ,[descripcion_producto]
+      ,[cod_local]
+      ,[descripcion_local]
+      ,[formato]
+      ,[distrito]
+      ,[vta_periodo_unid]
+	  ,[vta_costo]
+      ,[stock_actual_unid]
+      ,[nombre_representante]
+      ,[id_representante]
+ FROM #inkafarma
+
+-------------------------------------------------------------
+
+drop table if exists #venta_2020
+select  PERIODO
+        ,nombre_representante
+        ,id_representante
+        ,sum(vta_costo)venta_costo
+into	#venta_2020
+from    comercial.dbo.cadena_venta_stock
+where   year(PERIODO) = '2020'
+group by PERIODO
+        ,nombre_representante
+        ,id_representante
+
+--limpiamos casos nulos
+update	comercial.dbo.cadena_venta_stock
+set		vta_costo = 0
+where	vta_costo is null
+
+update	#venta_2020
+set		venta_costo = 0
+where	venta_costo is null
+
+drop table if exists #periodo_2020
 select	*
-from	#inkafarma
+into	#periodo_2020
+from	periodo
+where	year(dia) = '2020'
+
+
+select	a.dia as periodo
+		,b.nombre_representante
+		,b.id_representante
+		,b.venta_costo
+into	comercial.dbo.cadena_inkafarma_resumen
+from	#periodo_2020 a
+left join #venta_2020 b
+on		(a.dia = b.periodo)
+order by periodo desc
+
+update	comercial.dbo.cadena_inkafarma_resumen
+set		nombre_representante = ''
+where	nombre_representante is null
+
+update	comercial.dbo.cadena_inkafarma_resumen
+set		id_representante = ''
+where	id_representante is null
+
+update	comercial.dbo.cadena_inkafarma_resumen
+set		venta_costo = 0
+where	venta_costo is null
+
+delete from comercial.[dbo].[venta_visitador]
+where id = 17
+
+
+
+
+
+
