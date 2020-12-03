@@ -90,6 +90,11 @@ where	periodo is null
 and		stock_actual_unid = 0
 go
 
+/*
+select * from #inkafarma
+where periodo = '2020-12-03'
+*/
+
 -- Actualizamos al día de hoy los productos con stock sin ventas
 update	#inkafarma
 set		periodo = (select max(periodo) from temporal.dbo.inkafarma_venta_input)
@@ -112,6 +117,9 @@ on		a.cod_local = b.cod_local
 go
 
 -- 5. Insert a tabla de producción
+
+truncate table comercial.dbo.cadena_venta_stock
+go
 
 insert into comercial.dbo.cadena_venta_stock
 SELECT [periodo]
