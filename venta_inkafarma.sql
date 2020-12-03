@@ -1,6 +1,8 @@
-select * from temporal.dbo.inkafarma_venta_input
-where DESCRIPCION like '%%'
 
+--Limpiamos valores en rango de fecha ingresado
+delete from temporal.dbo.inkafarma_venta
+where	periodo in (select distinct periodo from temporal.dbo.inkafarma_venta_input)
+go
 
 --1. Creamos tabla de ubicaciones y productos únicos
 
@@ -76,6 +78,12 @@ and		d.nombre_representante is not null
 
 --Nota: No hay venta de los productos filtrados en el 2019
 
+/*
+select distinct periodo from #inkafarma
+order by 1 desc
+*/
+
+
 -- Filtramos los valores con stock
 delete from #inkafarma
 where	periodo is null
@@ -84,7 +92,7 @@ go
 
 -- Actualizamos al día de hoy los productos con stock sin ventas
 update	#inkafarma
-set		periodo = cast(getdate() as date)
+set		periodo = (select max(periodo) from temporal.dbo.inkafarma_venta_input)
 where	periodo is null
 go
 
@@ -121,7 +129,7 @@ SELECT [periodo]
  FROM #inkafarma
 
 -------------------------------------------------------------
-
+/*
 drop table if exists #venta_2020
 select  PERIODO
         ,nombre_representante
@@ -174,7 +182,7 @@ where	venta_costo is null
 
 delete from comercial.[dbo].[venta_visitador]
 where id = 17
-
+*/
 
 
 
