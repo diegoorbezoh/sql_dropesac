@@ -425,6 +425,16 @@ update visita_concordancia
 set latitud_visita = ltrim(rtrim(replace(latitud_visita,',','')))
 go
 
+-- Limitamos la longitud a 8 de longitud
+update	visita_concordancia
+set		longitud_visita = SUBSTRING(longitud_visita,1,8)
+go
+
+update	visita_concordancia
+set		latitud_visita = SUBSTRING(latitud_visita,1,8)
+go
+
+
 --
 
 update	visita_concordancia
