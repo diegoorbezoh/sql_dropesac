@@ -78,6 +78,8 @@ and		d.nombre_representante is not null
 
 --Nota: No hay venta de los productos filtrados en el 2019
 
+select * from temporal.dbo.inkafarma_venta
+
 /*
 select distinct periodo from #inkafarma
 order by 1 desc

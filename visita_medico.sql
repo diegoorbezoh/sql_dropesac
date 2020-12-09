@@ -216,8 +216,19 @@ inner join #ubicacion_medico_total a
 on		a.nombre_propietario = b.nombre_representante
 where	a.id_propietario is null
 
+--
 
 
+
+
+--! PARCHE NOMBRES
+update	a
+set		a.Nombre_Propietario__c = b.nombre_representante
+from	#salesforce_visita_medico a
+inner join temporal.[dbo].[input_usuarios] b
+on		a.OwnerId = b.id_representante
+
+--
 drop table if exists #visita_concordancia
 select	b.latitud as latitud_IPRESS
 		,b.longitud as longitud_IPRESS
@@ -506,3 +517,27 @@ SELECT [rank]
 	  ,[nombre_centro]
   FROM [dbo].[visita_concordancia]
 
+  --
+
+  /*
+
+	select * from #salesforce_visita_medico
+	where OwnerId in ('0056g0000039GlB','0056g000004bILJ')
+
+	select * from #salesforce_visita_medico
+	where OwnerId in (
+
+    select distinct id_propietario from comercial.dbo.[visita_concordancia]
+	where nombre_propietario = 'No encontrado'
+	)
+
+  select distinct nombre_propietario from comercial.dbo.[visita_concordancia]
+
+  select count(*) from comercial.dbo.[visita_concordancia]
+  where nombre_propietario = 'No encontrado'
+  and	id_propietario = '0056g000005efQj'
+  order by fecha_visita desc
+
+    select * from comercial.dbo.[visita_concordancia]
+	where nombre_propietario like '%usquiano%'
+  */
