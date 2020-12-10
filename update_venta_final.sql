@@ -229,12 +229,14 @@ group by a.fechaEmision
 ;
 
 update  test.resultado_final a
-join test.resultado_transferencia b
+join    test.resultado_transferencia b
 on      a.idVendedor = b.idVendedor
 set     a.nombreVendedor = b.nombreVendedor
-where   a.idVendedor is null
+where   a.nombreVendedor is null
+and     a.venta_transferencia is not null
 ;
 
+# Nota: Revisar optimización de la tabla Matriz con un union select de valores admisibles
 
 
 select * from test.resultado_final
