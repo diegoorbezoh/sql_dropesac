@@ -116,7 +116,7 @@ update	salesforce_ubicacion_IPRESS
 set		id = substring(id,1,15)
 go
 
--- Limpiamos tabla de médicos
+-- Limpiamos tabla de mï¿½dicos
 update	salesforce_medico
 set		id_medico = substring(id_medico,1,15)
 go
@@ -184,7 +184,7 @@ on		a.nombre_propietario = b.nombre_representante
 go
 
 
---Limpiamos algún valor que no corresponda
+--Limpiamos algï¿½n valor que no corresponda
 --delete from #ubicacion_medico_total where nombre_propietario = 'Ivo Carlos Ramos'
 
 -- ****************************************************************************************
@@ -217,9 +217,6 @@ on		a.nombre_propietario = b.nombre_representante
 where	a.id_propietario is null
 
 --
-
-
-
 
 --! PARCHE NOMBRES
 update	a
@@ -301,7 +298,7 @@ ALTER TABLE temporal.[dbo].[input_usuarios]
 ALTER COLUMN id_representante varchar(50) COLLATE Latin1_General_CS_AS
 go
 
--- Completamos Nombres vacíos
+-- Completamos Nombres vacï¿½os
 update	a
 set		a.nombre_propietario = b.nombre_representante
 from	temporal.[dbo].[input_usuarios] b
@@ -322,7 +319,7 @@ alter table #visita_concordancia add distancia varchar(100)
 go
 
 update	#visita_concordancia
-set		nombre_propietario = 'Luz Castañeda Jumpa'
+set		nombre_propietario = 'Luz Castaï¿½eda Jumpa'
 where	id_propietario = '0056g000004b20L'
 go
 
@@ -517,7 +514,42 @@ SELECT [rank]
 	  ,[nombre_centro]
   FROM [dbo].[visita_concordancia]
 
-  --
+# ------------
+
+update  comercial.visita_concordancia
+set     estado = 'correcto'
+where   nombre_centro like '%HOSP%'
+and     distancia >= 200 and distancia <= 500
+and     estado = 'revisar'
+;
+
+update  comercial.visita_concordancia
+set     estado = 'correcto'
+where   id_visita  in ('a016g00000bUZw1','a016g00000aJlhz','a016g00000azPJG');
+
+update  comercial.visita_concordancia
+set     estado = 'justificado'
+where   id_visita  in ('a016g00000bUZw1'
+,'a016g00000aJlhz'
+,'a016g00000azPJG'
+,'a016g00000axHJj'
+,'a016g00000ZIhkr'
+,'a016g00000ZIhmp'
+,'a016g00000ban0j'
+,'a016g00000bacV4'
+,'a016g00000baZfH'
+,'a016g00000bFRFe'
+,'a016g00000baZLa'
+,'a016g00000bacKO'
+,'a016g00000baZQK'
+,'a016g00000baZME'
+,'a016g00000ban2D'
+);
+
+
+
+
+
 
   /*
 

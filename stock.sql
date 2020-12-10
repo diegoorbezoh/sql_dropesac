@@ -312,6 +312,7 @@ insert into [dbo].[cadena_venta_stock]
       ,[formato]
       ,[nombre_local]
       ,[cantidad]
+	  ,0
       ,[stock]
       ,[nombre_representante]
       ,[id_representante]
@@ -328,6 +329,7 @@ SELECT distinct
       ,[formato]
       ,[distrito]
       ,[vta_periodo_unid]
+	  ,vta_costo
       ,[stock_actual_unid]
       ,[nombre_representante]
       ,[id_representante]

@@ -139,6 +139,45 @@ SELECT [periodo]
  FROM #inkafarma
 
 -------------------------------------------------------------
+insert into [dbo].[cadena_venta_stock]
+ SELECT [fecha]
+      ,[COD_PRODUCTO]
+		,[nombre_producto]
+		,[COD_LOCAL]
+      ,[descripcion_local]
+      ,[formato]
+      ,[nombre_local]
+      ,[cantidad]
+	  ,0
+      ,[stock]
+      ,[nombre_representante]
+      ,[id_representante]
+  FROM [dbo].[venta_universal_resumen]
+
+
+
+SELECT distinct 
+		[periodo]
+      ,[cod_producto]
+      ,[descripcion_producto]
+      ,[cod_local]
+      ,[descripcion_local]
+      ,[formato]
+      ,[distrito]
+      ,[vta_periodo_unid]
+	  ,vta_costo
+      ,[stock_actual_unid]
+      ,[nombre_representante]
+      ,[id_representante]
+into	#temporal
+FROM [dbo].[cadena_venta_stock]
+
+truncate table [dbo].[cadena_venta_stock]
+
+insert into [dbo].[cadena_venta_stock]
+select	*
+from	#temporal
+
 /*
 drop table if exists #venta_2020
 select  PERIODO

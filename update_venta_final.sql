@@ -1,3 +1,12 @@
+/*
+ Script de ventas
+ Procesos:
+ - Actualización de ventas, pedidos en proceso
+ - Implementación Data Studio
+
+ */
+
+# Update ventas y Transferencias
 
 drop table if exists test.venta;
 create temporary table test.venta
@@ -103,40 +112,13 @@ select  	b.idDetalle,
     b.numeroRef
 from    dropesac2015_temp.view_nota_credito_devolucion_reporteria b;
 
-
-#---
-
-select fechaEmision from comercial.venta_reporteria
-order by fechaEmision desc;
-
-
-select * from dropesac2015_temp.view_pre_pedidos_distribucion
-where numeroDocumentoDistribuidor = '20482528695'
-;
-
+# Update pedidos en proceso
 
 truncate table comercial.transferencias_reporteria;
 
 insert into comercial.transferencias_reporteria
 select * from dropesac2015_temp.view_pre_pedidos_distribucion;
 
-
-select distinct idVendedor from comercial.venta_reporteria ;
-
-
-select distinct idVendedor from comercial.venta_reporteria
-where idVendedor in (select distinct idVendedor from comercial.transferencias_reporteria)
-order by idVendedor;
-
-
-
-
-select * from comercial.venta_reporteria
-where idVendedor = '132' and cast(fechaEmision as date) = '2020-06-18';
-select sum(subTotalValorVenta)venta_trans from comercial.transferencias_reporteria
-where idVendedor = '132' and cast(fechaEmisionPrePedido as date) = '2020-06-18';
-
-#resta NC
 
 # Temporal venta directa
 
@@ -151,145 +133,122 @@ group by a.idVendedor
          ,a.vendedor
         ,a.fechaEmision
 ;
+/*
+select * from test.venta_reporteria_aux
+
+
+*/
 
 # Temporal transferencias
 
 drop table if exists test.transferencias_reporteria_aux;
 create temporary table test.transferencias_reporteria_aux
 select  a.idVendedor
+        ,a.nombreVendedor
         ,cast(a.fechaEmisionPrePedido as date)fechaEmision
         ,sum(a.subTotalValorVenta)venta_transferencia
 from    comercial.transferencias_reporteria a
 group by a.idVendedor
+        ,a.nombreVendedor
          ,a.fechaEmisionPrePedido
 ;
 
-# Tabla resumen
+/*
+ select * from comercial.transferencias_reporteria
+
+ idVendedor,fechaEmision,venta_transferencia
+10,2020-11-19,1694.9152542
+
+
+ */
+
+# Matriz de fecha
+
+
+drop table if exists test.vendedor;
+create temporary table test.vendedor
+select distinct idVendedor
+from    test.venta_reporteria_aux;
+
+drop table if exists test.matriz;
+create temporary table test.matriz
+select  *
+from    test.fecha
+CROSS JOIN test.vendedor;
+
+select * from test.matriz;
+
 
 truncate table comercial.venta_resultado;
 
 insert into comercial.venta_resultado
-select  a.idVendedor
+
+drop table if exists test.resultado_venta;
+create temporary table test.resultado_venta
+select  distinct
+        c.dia as fechaEmision
+        ,c.idVendedor
         ,a.vendedor
-        ,a.fechaEmision
         ,a.venta_directa
-        ,b.venta_transferencia
-from    test.venta_reporteria_aux a
-left join test.transferencias_reporteria_aux b
-on      (a.idVendedor = b.idVendedor
-and    a.fechaEmision = b.fechaEmision)
+from    test.matriz c
+left join test.venta_reporteria_aux a
+on      (a.fechaEmision = c.dia
+and     a.idVendedor = c.idVendedor)
 ;
 
-update  comercial.venta_resultado
-set     venta_transferencia = 0
-where   venta_transferencia is null;
-
-select * from comercial.venta_resultado
-
-
-select * from dropesac2015_temp.view_pedidos_con_cantidad_pendiente;
-
-
-PERIODO AGOSTO - NOV
-POR MES CUANTO EN UNID
-MERICLE,CRETROL,ALZELIN, CLANZA ,MVAT , PREGRADROL Y KENOPLAST
-UNIVERSAL E INKAFARMA
-
-
-
-# --Cuentas
-
-select * from comercial.salesforce_cuenta limit 5;
-
-select  count(name)
-from    comercial.salesforce_cuenta
-where   Type = 'Cliente Oportunidad'
-and     Tipos_de_Centro_de_Salud__c = 'DIGEMID'
-and     Description = 'LAB'
-;
-
-drop table if exists test.oportunidad;
-create temporary table test.oportunidad
-select b.nombre_completo
-        ,b.zona
-        ,Distrito__c
-        ,case when Description = 'DRG' then count(distinct name) else 0 end DRG
-        ,case when Description = 'BOT' then count(distinct name) else 0 end BOT
-        ,case when Description = 'FAR' then count(distinct name) else 0 end FAR
-        ,case when Description not in ('FAR','DRG','BOT') then count(distinct name) else 0 end OTROS
-from    comercial.salesforce_cuenta
-left join comercial.empleado b
-on      substring(OwnerId,1,15) = b.id_salesforce
-where   Type = 'Cliente Facturado'
-#and     Tipos_de_Centro_de_Salud__c = 'DIGEMID'
-group by OwnerId
-        ,Description
-        ,Distrito__c
-        ,b.nombre_completo
-        ,b.zona
-order by b.nombre_completo
-        ,b.zona
+drop table if exists test.resultado_transferencia;
+create temporary table test.resultado_transferencia
+select  distinct
+        c.dia as fechaEmision
+        ,c.idVendedor
+        ,a.nombreVendedor
+        ,a.venta_transferencia
+from    test.matriz c
+left join test.transferencias_reporteria_aux a
+on      (a.fechaEmision = c.dia
+and     a.idVendedor = c.idVendedor)
 ;
 
 
-select * from test.oportunidad;
+drop table if exists test.resultado_final;
+create temporary table test.resultado_final
+select  distinct
+        a.fechaEmision
+        ,a.idVendedor
+        ,a.vendedor as nombreVendedor
+        ,a.venta_directa
+        ,sum(b.venta_transferencia)venta_transferencia
+from    test.resultado_venta a
+left join test.resultado_transferencia b
+on      (a.fechaEmision = b.fechaEmision
+and     a.idVendedor = b.idVendedor)
+group by a.fechaEmision
+        ,a.idVendedor
+        ,a.vendedor
+        ,a.venta_directa
+;
 
-
-select * from venta_reporteria where nombreComercial like '%BRALMA%';
-
-
-HORIZONTALIDAD
-
-
-select * from venta_visitador;
-
-delete from venta_visitador
-where id = '17';
-
-
-
-select * from test.oportunidad;
-select * from comercial.empleado;
-
-select distinct
-                b.DISTRITO
-                ,a.Name as ruc
-                ,substring(OwnerId,1,15) as id_salesforce
-from  comercial.salesforce_cuenta a
-inner join test.distrito b
-on a.name = b.ruc
-where Type = 'Cliente Facturado'
-and a.Distrito__c is null;
-
-
-
-# --------------
-
-create table comercial.prepedidos_reporteria as
-select * from dropesac2015_temp.view_pedidos_con_cantidad_pendiente;
-
-# --------------
-
-select distinct tipoDocumento
-from comercial.venta_reporteria
-where numeroDocumentoCliente != '20604754870'
-and idProducto in ('2104','1388','2040','2100','2147','2143','2178','2179','1813','1817','2087')
-and year(fechaEmision) = '2020'
-
-order by producto;
-
-
-select * from visita_concordancia
-where id_propietario = '0056g000005efQj'
+update  test.resultado_final a
+join test.resultado_transferencia b
+on      a.idVendedor = b.idVendedor
+set     a.nombreVendedor = b.nombreVendedor
+where   a.idVendedor is null
 ;
 
 
-select * from dropesac2015_temp.view_pedidos_con_cantidad_pendiente
-limit 10;
 
-select * from dropesac2015_temp.ventas_ordenpedidodetalle
-limit 10;
+select * from test.resultado_final
+where fechaEmision = '2020-04-03'
+and vendedor is not null;
+
+select * from test.resultado2
+where dia >= '2019-01-01'
+order by dia desc;
+
+select count(*) from test.resultado2
+where venta_transferencia is not null;
 
 
 
-flagBonificacion
+
+
