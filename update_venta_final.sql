@@ -112,6 +112,12 @@ select  	b.idDetalle,
     b.numeroRef
 from    dropesac2015_temp.view_nota_credito_devolucion_reporteria b;
 
+# Reemplazamos ","
+update  comercial.venta_reporteria
+set     producto = replace(producto,',',';')
+where   producto like '%,%'
+;
+
 # Update pedidos en proceso
 
 truncate table comercial.transferencias_reporteria;
