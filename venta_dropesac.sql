@@ -1,17 +1,6 @@
 
 
-
-
-insert into factura_boleta_reporteria
-select * from dropesac2015_temp.view_factura_boleta_reporteria;
-
-
-select distinct producto from comercial.venta_reporteria
-where producto '%MEGEX%'
-
-
-
-
+/*
 
 # 1. Update de campos null
 update  comercial.venta_reporteria a
@@ -25,23 +14,70 @@ join    comercial.venta_visitador b
 on      a.id_visitador = b.id_visitador
 set     a.nombre_visitador = b.nombre_visitador
 where   a.nombre_visitador is null;
+*/
 
 -- Tablas temporales según año
+
+select * from venta_2020;
 
 use test;
 
 drop table if exists venta_2020;
 create temporary table venta_2020
-SELECT cast(fechaEmision as date)fecha_emision
+SELECT cast(fechaEmision as date)mes
 			,id_visitador
             ,nombre_visitador
             ,sum(total)total
-FROM	comercial.venta_reporteria
+FROM	comercial.venta_reporteria a
+left join comercial.venta_visitador b
+on      a.numeroDocumentoCliente = b.DOC_CLIENTE
 WHERE	YEAR(fechaEmision) = 2020
-AND     idProducto IN ('1719','1813','1817','2035','2040','2087','2100','2104','2143','2147')
+AND     idProducto IN ('1388','1813','1817','2035','2040','2087','2100','2104','2143','2147','2178','2179')
+and     id_visitador is not null
 group by fechaEmision
-		,id_visitador
-		,nombre_visitador;
+        ,id_visitador
+		,nombre_visitador
+order by nombre_visitador;
+
+SELECT *
+FROM	comercial.venta_reporteria a
+left join comercial.venta_visitador b
+on      a.numeroDocumentoCliente = b.DOC_CLIENTE
+WHERE	YEAR(fechaEmision) = 2020
+AND     idProducto IN ('1388','1813','1817','2035','2040','2087','2100','2104','2143','2147','2178','2179')
+and     id_visitador is not null
+and     nombre_visitador = 'Yulisa Valverde Bellodas'
+order by fechaEmision;
+
+
+
+select * from comercial.venta_visitador;
+
+/*
+
+ select distinct producto from comercial.venta_reporteria
+ where  idProducto IN ('1388','1813','1817','2035','2040','2087','2100','2104','2143','2147','2178','2179')
+
+  select distinct idProducto,producto from comercial.venta_reporteria
+ where  producto like '%pregadol%'
+
+ select distinct fechaEmision from comercial.venta_reporteria
+ where numeroDocumentoCliente = '20547347600'
+ order by fechaEmision
+
+  select *  from comercial.venta_reporteria
+ where month(fechaEmision) = 11 and numeroDocumentoCliente = '20547347600'
+ and idProducto IN ('1388','1813','1817','2035','2040','2087','2100','2104','2143','2147','2178','2179')
+
+   select distinct idproducto,producto  from comercial.venta_reporteria
+ where fechaEmision = '2020-11-11' and numeroDocumentoCliente = '20547347600'
+
+
+ ;
+
+
+ */
+
 
 drop table if exists venta_2019;
 create temporary table venta_2019

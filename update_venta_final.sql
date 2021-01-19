@@ -118,6 +118,13 @@ set     producto = replace(producto,',',';')
 where   producto like '%,%'
 ;
 
+
+select * from comercial.venta_reporteria
+where year(fechaEmision) = '2020'
+
+select * from comercial.venta_reporteria
+order by 1 desc
+
 # Update pedidos en proceso
 
 truncate table comercial.transferencias_reporteria;
@@ -255,6 +262,25 @@ order by dia desc;
 
 select count(*) from test.resultado2
 where venta_transferencia is not null;
+
+select * from visita_dia_laborable
+limit 100;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
