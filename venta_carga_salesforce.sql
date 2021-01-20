@@ -6,6 +6,7 @@ set @dia_ant_pre = '2021-01-12';
 
 
 /* PREPEDIDOS */
+/*
 select
 DATE_FORMAT(p.fechaEmision, "%d/%m/%Y %H:%i") as fechaEmision,
 upper(s.nombre) as sede, 
@@ -47,25 +48,15 @@ inner join ventas_tipo_orden_prepedido t on t.id = p.tipoOrdenPrePedido_id
 inner join formapago f on f.idFormaPago = p.formaPago_idFormaPago
 where p.flagEstado = true and p.flagActivo = true and DATE(p.fechaEmision) between @dia_ant and @dia_post
 and p.codigo in (
-'PRLIM-00007330',
-'PRLIM-00007356',
-'PRCIX-00002479',
-'PRLIM-00007382',
-'PRLIM-00007387',
-'PRLIM-00007401',
-'PRLIM-00007406',
-'PRCIX-00002505',
-'PRCIX-00002526',
-'PRCIX-00002536',
-'PRLIM-00007496',
-'PRLIM-00007564',
-'PRLIM-00007641',
-'PRLIM-00007672',
-'PRLIM-00007707'
+'PRLIM-00008263',
+'PRLIM-00008265',
+'PRLIM-00008277'
 )
 order by p.fechaEmision;
+*/
 
 /* PREPEDIDO DETALLE */
+/*
 select d.id,
 p.codigo as 'pre-ordenDePedido',
 upper(m.descripcion) as moneda,
@@ -106,9 +97,11 @@ and DATE(p.fechaEmision) between @dia_ant and @dia_post
 'PRLIM-00007179',
 'PRLIM-00007218',
 'PRCIX-00002429'
-)*/;
+);
+*/
 
 /* MODIFICACIONES ADICIONALES */
+/*
 select 
 p.codigo as PreOrdenDePedido,
 upper(fc.nombre) as formadeContacto,
@@ -136,8 +129,11 @@ and (DATE(p.fechaModificacion) between @dia_ant and @dia_post
 or DATE(p.fechaEvaluacion) between @dia_ant and @dia_post
 or DATE(p.fechaAnulacion) between @dia_ant and @dia_post)
 and DATE(p.fechaEmision) <= @dia_ant_pre;
+*/
+
 
 /* MODIFICACIONES DETALLE */
+/*
 select d.id as ItemDetallePrepedido,
 d.cantidad,
 d.valorUnitario,
@@ -153,9 +149,10 @@ and (DATE(p.fechaModificacion) between @dia_ant and @dia_post
 or DATE(p.fechaEvaluacion) between @dia_ant and @dia_post
 or DATE(p.fechaAnulacion) between @dia_ant and @dia_post)
 and DATE(p.fechaEmision) <= @dia_ant_pre;
-
+*/
 
 /* PEDIDOS */
+/*
 select o.codigoOrdenPedido as codigoOrdendePedido, 
 upper(t.noDescripcion) as tipo, 
 upper(o.prioridad) as prioridad, 
@@ -199,27 +196,16 @@ inner join sede s on s.idSede = o.idSede
 left join ventas_pre_pedido vp on vp.id = o.prePedido_id
 where o.flagEstado = true and o.flagActivo = true and o.idTipoOrdenPedido in (1,2)
 and o.subTipoOrdenPedido not in ('Retiro por entrega a trabajadores', 'Retiro por muestras medicas')
-and DATE(o.fechaRegistro) between @dia_ant and @dia_post;
-/*
+and DATE(o.fechaRegistro) between @dia_ant and @dia_post
 and o.codigoOrdenPedido in  (
-'LIM014847',
-'LIM014936',
-'LIM014938',
-'LIM014939',
-'LIM014995',
-'LIM014994',
-'LIM015072',
-'LIM015099',
-'CIX006102',
-'CIX006115',
-'LIM015370',
-'LIM015439',
-'LIM015549',
-'LIM015569'
-);*/
+'LIM017484'
+);
+*/
+
 
  /* DETALLE PEDIDOS */
-select d.id, 
+/*
+select d.id,
 p.codigoProducto, 
 d.cantidad,
 d.valorVentaUnitaria as valorUnitario, 
@@ -259,6 +245,7 @@ and DATE(o.fechaRegistro) between @dia_ant and @dia_post;
 
 /* MODIFICACION DE PEDIDOS  */
 /* PEDIDOS */
+/*
 select 
 o.codigoOrdenPedido as codigoOrdendePedido,
 coalesce(DATE_FORMAT(o.fechaEvaluacionCobranzas, "%d/%m/%Y %H:%i") , '')as fecha_de_evaluacion_cobranza, 
@@ -304,8 +291,11 @@ DATE(o.fechaEvaluacionCobranzas) between @dia_ant and @dia_post or
 DATE(o.fechaEvaluacionGerencia) between @dia_ant and @dia_post
 )
 and DATE(o.fechaRegistro) <= @dia_ant_pre;
+*/
+
 
  /* DETALLE PEDIDOS MODIFICADOS */
+/*
 select 
 d.id as codigoDetalle, 
 d.cantidad,
@@ -328,9 +318,10 @@ DATE(o.fechaEvaluacionCobranzas) between @dia_ant and @dia_post or
 DATE(o.fechaEvaluacionGerencia) between @dia_ant and @dia_post
 )
 and DATE(o.fechaRegistro) <= @dia_ant_pre;
-
+*/
 
 /* FACTURA/BOLETA */
+/*
 select m.id, 
 concat(m.serie, '-', m.numero) as NombreDeFactura,
 upper(tv.descripcion) as tipoDeDocumentoDeVenta,
@@ -385,21 +376,23 @@ m.motivoTrasladoOtros not in ('TRANSFERENCIA GRATUITA-RETIRO POR MUESTRAS MEDICA
 and m.flagHistorico is null and m.idTipoDocumento in (1,2) 
 and (DATE(m.fechaEmision) between @dia_ant and @dia_post or
  DATE(m.fechaAprobacionSunat) between @dia_ant and @dia_post)
-/*and m.idSede = 1 */
-and m.idVendedor <> 335
-;
--- and c.numeroDocIden in (
--- '10403604742',
--- '20601989108',
--- '20601113989',
--- '20604723486',
--- '20515971921'
--- )
--- having NombreDeFactura in (
--- 'F002-00013923'
--- );
+# and m.idSede = 1
+# and m.idVendedor <> 335
+# and c.numeroDocIden in (
+#'20512272470'
+#)
+having NombreDeFactura in (
+'B002-00002660',
+'F002-00014793',
+'F002-00014794',
+'F002-00014829',
+'F002-00014854',
+'F002-00014882'
+);
+*/
 
 /* DETALLE FACTURA BOLETA */
+/*
 select d.id as nombreDeDetalleFactura,
 concat(m.serie, '-', m.numero) as factura,
 p.codigoProducto,
@@ -440,10 +433,12 @@ having factura in (
 'F002-00013180',
 'B002-00002396',
 'F002-00013263'
-);*/
+);
+*/
 
 /* ANULADAS */
-select m.id, 
+/*
+select m.id,
 concat(m.serie, '-', m.numero) as NombreDeFactura,
 upper(em.nombreEstadoMovimiento) as estado,
 DATE_FORMAT(m.fechaAnulacion, "%d/%m/%Y %H:%i") as fechaAnulacion,
@@ -473,7 +468,7 @@ and m.flagFacturaElect = true and (m.motivoTrasladoOtros is null || m.motivoTras
 and m.flagHistorico is null and m.idTipoDocumento in (1,2) and DATE(m.fechaEmision) <= @dia_ant_pre
 and DATE(m.fechaAnulacion) between @dia_ant and @dia_post
 and m.idVendedor <> 335;
-
+*/
 
 select d.id as nombreDeDetalleFactura,
 concat(m.serie, '-', m.numero) as factura,
@@ -531,7 +526,9 @@ where
 c.flagEstado = true and c.flagActivo = true
 and c.numeroDocIden in
 (
-'10099558771'
+'20604344574',
+'20605614648',
+'21574071'
 );
 
 /* PRODUCTOS */
@@ -548,10 +545,7 @@ replace(CONCAT(IFNULL(`p`.`nombreComun`, ''),
                 CONVERT( IFNULL(`p`.`cantidadUniMinVenta`, '') USING UTF8)), '"', "'") AS `producto`
  from producto p 
  where p.codigoProducto in (
-'1400010',
-'1400010',
-'1400010',
-'5220001',
-'5220003',
-'5220004'
+'3000019',
+'3000020',
+'3000023'
 ) and p.flagEstado = 1 and p.flagActivo = 1;
